@@ -91,15 +91,19 @@ eval t = case eval1 t of
 eval' :: Term -> Maybe Term
 eval' v | isVal v     = Just v
 eval' (TmIf t1 t2 t3) = case eval' t1 of
-                          Just TmTrue                   -> eval' t2
-                          Just TmFalse                  -> eval' t3
+                          Just TmTrue                          -> eval' t2
+                          Just TmFalse                         -> eval' t3
+                          _                                    -> Nothing
 eval' (TmSucc t1)     = case eval' t1 of
-                          Just nv1 | isVal nv1          -> Just (TmSucc nv1)
+                          Just nv1 | isNumericVal nv1          -> Just (TmSucc nv1)
+                          _                                    -> Nothing
 eval' (TmPred t1)     = case eval' t1 of
-                          Just TmZero                   -> Just TmZero
-                          Just (TmSucc nv1) | isVal nv1 -> Just nv1
+                          Just TmZero                          -> Just TmZero
+                          Just (TmSucc nv1) | isNumericVal nv1 -> Just nv1
+                          _                                    -> Nothing
 eval' (TmIsZero t1)   = case eval' t1 of
-                          Just TmZero                   -> Just TmTrue
-                          Just (TmSucc nv1) | isVal nv1 -> Just TmFalse
+                          Just TmZero                          -> Just TmTrue
+                          Just (TmSucc nv1) | isNumericVal nv1 -> Just TmFalse
+                          _                                    -> Nothing
 eval' _               = Nothing
 
