@@ -1,4 +1,7 @@
--- type declaration
+main :: IO ()
+main = return ()
+
+-- | type declaration
 data Term = TmTrue
           | TmFalse
           | TmIf Term Term Term
@@ -8,20 +11,43 @@ data Term = TmTrue
           | TmIsZero Term
           deriving (Show)
 
--- check whether a term is a numeric value
+
+-- | check whether a term is a numeric value
+-- >>> isNumericVal TmZero
+-- True
+-- >>> isNumericVal (TmSucc TmZero)
+-- True
+-- >>> isNumericVal TmTrue
+-- False
 isNumericVal :: Term -> Bool
 isNumericVal TmZero      = True
 isNumericVal (TmSucc t1) = isNumericVal t1
 isNumericVal _           = False
 
--- check whether a term is a value
+
+-- | check whether a term is a value
+-- >>> isVal TmTrue
+-- True
+-- >>> isVal (TmSucc TmZero)
+-- True
+-- >>> isVal (TmIf TmTrue TmTrue TmTrue)
+-- False
 isVal :: Term -> Bool
 isVal TmTrue               = True
 isVal TmFalse              = True
 isVal t1 | isNumericVal t1 = True
 isVal _                    = False
 
--- single-step evaluator 
+
+-- | single-step evaluator
+-- >>> eval1 TmZero
+-- Nothing
+-- >>> eval1 (TmIf (TmIsZero TmZero) (TmPred (TmSucc TmZero)) TmFalse)
+-- Just (TmIf TmTrue (TmPred (TmSucc TmZero)) TmFalse)
+-- >>> eval1 (TmIf TmTrue (TmPred (TmSucc TmZero)) TmFalse)
+-- Just (TmPred (TmSucc TmZero))
+-- >>> eval1 (TmPred (TmSucc TmZero))
+-- Just TmZero
 eval1 :: Term -> Maybe Term
 eval1 (TmIf TmTrue t2 t3)     = Just t2
 eval1 (TmIf TmFalse t2 t3)    = Just t3
@@ -45,12 +71,23 @@ eval1 (TmIsZero t1)           = case eval1 t1 of
                                   Nothing  -> Nothing
 eval1 _                       = Nothing
 
+
+-- | call eval1 recursively until it reaches `Nothing`
+-- >>> eval TmZero
+-- Just TmZero
+-- >>> eval (TmIf (TmIsZero TmZero) (TmPred (TmSucc TmZero)) TmFalse)
+-- Just (TmPred (TmSucc TmZero))
 eval :: Term -> Maybe Term
 eval t = case eval1 t of
            Just t' -> eval1 t'
            Nothing -> Just t
 
--- big-step evaluator
+
+-- | big-step evaluator
+-- >>> eval' TmZero
+-- Just TmZero
+-- >>> eval' (TmIf (TmIsZero TmZero) (TmPred (TmSucc TmZero)) TmFalse)
+-- Just TmZero
 eval' :: Term -> Maybe Term
 eval' v | isVal v     = Just v
 eval' (TmIf t1 t2 t3) = case eval' t1 of
