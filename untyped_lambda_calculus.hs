@@ -26,3 +26,10 @@ termSubst j s (TmVar k) | k == j    = s
                         | otherwise = TmVar k
 termSubst j s (TmAbs t1)            = TmAbs (termSubst (j + 1) (termShift 0 1 s) (t1))
 termSubst j s (TmApp t1 t2)         = TmApp (termSubst j s t1) (termSubst j s t2)
+
+-- | beta-reduction rule
+-- >>> termSubstTop (TmAbs (TmApp (TmVar 1) (TmApp (TmVar 0) (TmVar 2)))) (TmAbs (TmVar 0))
+-- TmApp (TmVar 0) (TmApp (TmAbs (TmVar 0)) (TmVar 1))
+termSubstTop :: Term -> Term -> Term
+termSubstTop (TmAbs t12) v2 = termShift 0 (-1) (termSubst 0 (termShift 0 1 v2) (t12))
+
