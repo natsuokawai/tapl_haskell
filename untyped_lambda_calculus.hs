@@ -14,7 +14,15 @@ data Term = TmVar Int
 termShift :: Int -> Int -> Term -> Term
 termShift c d (TmVar k) | k < c  = TmVar k
                         | k >= c = TmVar (k + d)
-termShift c d (TmAbs t)          = TmAbs (termShift (c + 1) d t)
+termShift c d (TmAbs t1)         = TmAbs (termShift (c + 1) d t1)
 termShift c d (TmApp t1 t2)      = TmApp (termShift c d t1) (termShift c d t2)
 
 
+-- | substitution
+-- >>> termSubst 0 (TmVar 1) (TmApp (TmVar 0) (TmAbs (TmAbs (TmVar 2))))
+-- TmApp (TmVar 1) (TmAbs (TmAbs (TmVar 3)))
+termSubst :: Int -> Term -> Term -> Term
+termSubst j s (TmVar k) | k == j    = s
+                        | otherwise = TmVar k
+termSubst j s (TmAbs t1)            = TmAbs (termSubst (j + 1) (termShift 0 1 s) (t1))
+termSubst j s (TmApp t1 t2)         = TmApp (termSubst j s t1) (termSubst j s t2)
