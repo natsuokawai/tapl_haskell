@@ -33,3 +33,29 @@ termSubst j s (TmApp t1 t2)         = TmApp (termSubst j s t1) (termSubst j s t2
 termSubstTop :: Term -> Term -> Term
 termSubstTop (TmAbs t12) v2 = termShift 0 (-1) (termSubst 0 (termShift 0 1 v2) (t12))
 
+
+-- | ckeck if a term is TmAbs or not
+-- >>> isVal (TmAbs (TmVar 1))
+-- True
+-- >>> isVal (TmVar 1)
+-- False
+isVal :: Term -> Bool
+isVal (TmAbs t1) = True
+isVal _          = False
+
+-- | evaluation
+eval1 :: Term -> Maybe Term
+eval1 (TmApp (TmAbs t12) v2) | isVal v2 = Just (termSubstTop (TmAbs t12) v2)
+eval1 (TmApp v1 t2)          | isVal v1 = case eval1 t2 of
+                                            Just t2' -> Just (TmApp v1 t2')
+                                            Nothing  -> Nothing
+eval1 (TmApp t1 t2)                     = case eval1 t1 of
+                                            Just t1' -> Just (TmApp t1' t2)
+                                            Nothing  -> Nothing
+eval1 _                                 = Nothing
+
+eval :: Term -> Maybe Term
+eval t = case eval1 t of
+           Just t' -> eval t'
+           Nothing -> Just t
+
